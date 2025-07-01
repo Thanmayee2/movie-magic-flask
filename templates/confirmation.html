@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Confirmation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+    <section class="confirmation-container">
+        <div class="confirmation-box">
+            <img src="{{ url_for('static', filename='icons/ticket.png') }}"
+                 alt="Ticket Confirmed"
+                 style="width: 80px; margin-bottom: 20px;">
+            <h2>🎉 Your ticket is booked!</h2>
+            <p>Get ready to experience the magic.</p>
+            <a href="{{ url_for('home') }}" class="btn">Back to Home</a>
+        </div>
+    </section>
+
+    <script>
+        window.onload = () => {
+            confetti({
+                particleCount: 100,
+                spread: 60
+            });
+        };
+    </script>
+</body>
+</html>

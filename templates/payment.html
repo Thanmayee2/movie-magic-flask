@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="form-container">
+        <h2>💳 Payment Details</h2>
+        <form method="POST">
+            <label>Cardholder Name</label>
+            <input type="text" placeholder="e.g. John Doe" required>
+
+            <label>Card Number</label>
+            <input type="text" placeholder="1234 5678 9012 3456" maxlength="19" required>
+
+            <label>Expiry (MM/YY)</label>
+            <input type="text" placeholder="MM/YY" maxlength="5" required>
+
+            <label>CVV</label>
+            <input type="text" placeholder="123" maxlength="3" required>
+
+            <button type="submit">Pay & Confirm</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Tickets</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='seatSelection.js') }}" defer></script>
+</head>
+<body>
+    <div class="booking-container">
+        <div class="poster-preview">
+            <img src="{{ url_for('static', filename='posters/movie1.jpg') }}" alt="{{ movie }}">
+        </div>
+
+        <div class="form-area">
+            <h2>Book for {{ movie }}</h2>
+            <form method="POST">
+                <label>Date</label>
+                <input type="date" name="date" required>
+
+                <label>Time</label>
+                <input type="time" name="time" required>
+
+                <label>Seat</label>
+                <input type="text" name="seat" placeholder="Selected Seat" required readonly>
+
+                <div class="seat-grid">
+                    {% for row in ['A', 'B', 'C'] %}
+                        <div class="seat-row">
+                            {% for num in range(1, 6) %}
+                                <div class="seat" data-seat="{{ row }}{{ num }}">{{ row }}{{ num }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <button type="submit">Proceed to Payment</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
