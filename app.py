@@ -8,11 +8,11 @@ app.secret_key = 'super-secret-key'
 
 # -------- Mock Data --------
 # ✅ AWS Configuration (insert this here)
-dynamodb = boto3.resource('dynamodb', region_name='ap-south-1')
+dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 users_table = dynamodb.Table("MovieMagic_Users")
 bookings_table = dynamodb.Table("MovieMagic_Bookings")
-sns = boto3.client('sns', region_name='ap-south-1')
-sns_topic_arn = 'arn:aws:sns:us-east-1:724772095615:MovieMagicNotifications'  # Replace with real ARN
+sns = boto3.client('sns', region_name='us-east-1')
+sns_topic_arn = 'arn:aws:sns:us-east-1:605134439175:MovieMagicNotifications:259e3be3-5864-4985-ab9d-edfc09ca6300'  # Replace with real ARN
 
 
 # -------- Helper Functions --------
