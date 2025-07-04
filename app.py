@@ -2,19 +2,20 @@ from flask import Flask, render_template, request, redirect, session, flash, url
 import hashlib
 import uuid
 import boto3
-from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = 'super-secret-key'
 
-# ----- AWS Configuration -----
+# -------- Mock Data --------
+# ✅ AWS Configuration (insert this here)
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-appdata_table = dynamodb.Table("MovieMagic_AppData")
-
+users_table = dynamodb.Table("MovieMagic_Users")
+bookings_table = dynamodb.Table("MovieMagic_Bookings")
 sns = boto3.client('sns', region_name='us-east-1')
-sns_topic_arn = 'arn:aws:sns:us-east-1:724772095615:MovieMagicNotifications'  # Replace with actual ARN
+sns_topic_arn = 'arn:aws:sns:us-east-1:724772095615:MovieMagicNotifications'  # Replace with real ARN
 
-# ----- Helper Functions -----
+
+# -------- Helper Functions --------
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
@@ -25,6 +26,7 @@ def send_mock_email(email, booking_info):
 
     print(f"[MOCK EMAIL] Sent to {email}:\n{message}")
 
+    # Send to SNS
     try:
         sns.publish(
             TopicArn=sns_topic_arn,
@@ -34,11 +36,13 @@ def send_mock_email(email, booking_info):
     except Exception as e:
         print("SNS error:", e)
 
-# ----- Routes -----
+# -------- Routes --------
 @app.route('/')
 def index():
     return render_template('index.html')
 
+
+# Register Route
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -46,15 +50,14 @@ def register():
         password = request.form['password']
         hashed = hash_password(password)
 
-        response = appdata_table.get_item(Key={'PK': f"USER#{email}", 'SK': 'PROFILE'})
+        # Check if user exists
+        response = users_table.get_item(Key={'email': email})
         if 'Item' in response:
             flash("Account already exists.")
             return redirect(url_for('login'))
 
-        appdata_table.put_item(Item={
-            'PK': f"USER#{email}",
-            'SK': 'PROFILE',
-            'record_type': 'USER',
+        # Save new user
+        users_table.put_item(Item={
             'email': email,
             'password': hashed
         })
@@ -70,7 +73,7 @@ def login():
         password = request.form['password']
         hashed = hash_password(password)
 
-        response = appdata_table.get_item(Key={'PK': f"USER#{email}", 'SK': 'PROFILE'})
+        response = users_table.get_item(Key={'email': email})
         user = response.get('Item')
 
         if user and user['password'] == hashed:
@@ -80,7 +83,7 @@ def login():
             flash("Invalid email or password.")
             return render_template('login.html')
     return render_template('login.html')
-
+    
 @app.route('/home')
 def home():
     if 'user' not in session:
@@ -98,12 +101,14 @@ def home():
     ]
     return render_template('home.html', now_showing=now_showing, coming_soon=coming_soon, top_rated=top_rated)
 
+
 @app.route('/booking', methods=['GET', 'POST'])
 def booking():
     if 'user' not in session:
         return redirect(url_for('login'))
 
     if request.method == 'POST':
+        # Temporarily store booking form in session
         session['pending_booking'] = {
             'movie': 'Example Movie',
             'seat': request.form['seat'],
@@ -120,20 +125,18 @@ def payment():
         return redirect(url_for('login'))
 
     if request.method == 'POST':
+        # Pretend to process the fake payment
         booking_info = session['pending_booking']
         booking_info['user'] = session['user']
         booking_info['id'] = str(uuid.uuid4())[:8]
-        booking_info['PK'] = f"USER#{session['user']}"
-        booking_info['SK'] = f"BOOKING#{booking_info['id']}"
-        booking_info['record_type'] = 'BOOKING'
-        booking_info['timestamp'] = datetime.now().isoformat()
 
-        appdata_table.put_item(Item=booking_info)
+        bookings_table.put_item(Item=booking_info)
 
         session['last_booking'] = booking_info
         send_mock_email(session['user'], booking_info)
         session.pop('pending_booking', None)
         flash("Payment successful. Ticket booked!")
+
         return redirect(url_for('confirmation'))
 
     return render_template('payment.html')
@@ -152,6 +155,24 @@ def logout():
     flash("You have been logged out.")
     return redirect(url_for('index'))
 
+
+#@app.route('/debug/users')
+#def debug_users():
+  #  return f"Registered users: {list(mock_users.keys())}"
+
+# 🔍 Debug Route: View all mock bookings
+#@app.route('/debug/bookings')
+#def debug_bookings():
+    #if not mock_bookings:
+       # return "No bookings yet."
+
+   # html = "<h2>All Bookings</h2><ul>"
+    #for b in mock_bookings:
+     #   html += f"<li><b>User:</b> {b['user']}, <b>Movie:</b> {b['movie']}, <b>Seat:</b> {b['seat']}, <b>Date:</b> {b['date']}, <b>Time:</b> {b['time']}, <b>ID:</b> {b['id']}</li>"
+    #html += "</ul>"
+    #return html
+
 if __name__ == '__main__':
-    print("🚀 MovieMagic running at http://127.0.0.1:5000")
+    print("🚀 Mock MovieMagic running at http://127.0.0.1:5000")
     app.run(debug=True)
+
